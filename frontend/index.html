@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Hábitos de Leitura</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        div {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, button {
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchBooks();
+
+            document.getElementById('addBookButton').addEventListener('click', addBook);
+        });
+
+        async function fetchBooks() {
+            const bookList = document.getElementById('bookList');
+            bookList.innerHTML = ''; // Limpa a lista antes de adicionar os livros
+
+            try {
+                const response = await fetch('http://localhost:3001/books');
+                const books = await response.json();
+
+                books.forEach(book => {
+                    const newBookElement = document.createElement('li');
+                    newBookElement.textContent = `Título: ${book.title}, Autor: ${book.author}, Avaliação: ${book.rating}`;
+                    bookList.appendChild(newBookElement);
+                });
+            } catch (error) {
+                console.error('Erro ao obter livros:', error);
+            }
+        }
+
+        async function addBook() {
+            const title = document.getElementById('bookTitle').value.trim();
+            const author = document.getElementById('bookAuthor').value.trim();
+            const rating = document.getElementById('bookRating').value;
+
+            if (!title || !author || !rating) {
+                alert('Preencha todos os campos para adicionar o livro.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3001/books', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ title, author, rating }),
+                });
+
+                if (response.ok) {
+                    console.log('Livro adicionado com sucesso.');
+                } else {
+                    console.error('Erro ao adicionar livro:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro ao adicionar livro:', error);
+            }
+
+            // Após adicionar o livro, atualiza a lista
+            await fetchBooks();
+
+            // Limpa os campos de entrada
+            document.getElementById('bookTitle').value = '';
+            document.getElementById('bookAuthor').value = '';
+            document.getElementById('bookRating').value = '';
+        }
+    </script>
+</head>
+<body>
+    <h1>Registro de Hábitos de Leitura</h1>
+    <div>
+        <label for="bookTitle">Título do Livro:</label>
+        <input type="text" id="bookTitle" placeholder="Insira o título do livro">
+    </div>
+    <div>
+        <label for="bookAuthor">Autor do Livro:</label>
+        <input type="text" id="bookAuthor" placeholder="Insira o autor do livro">
+    </div>
+    <div>
+        <label for="bookRating">Avaliação:</label>
+        <input type="number" id="bookRating" min="1" max="5" placeholder="Insira a avaliação">
+    </div>
+    <button id="addBookButton">Adicionar Livro</button>
+    <h2>Livros Registrados</h2>
+    <ul id="bookList"></ul>
+</body>
+</html>
